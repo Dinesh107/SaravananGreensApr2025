@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { Button, EditableText, InputGroup, Toaster } from "@blueprintjs/core";
 import "./App.css";
 
-const AppToaster = 
+//const AppToaster = Toaster.create({position: "top"})
+// const AppToaster = Toaster.create({
+//   position: 'top'
+// })
 
 
 function App() {
@@ -37,13 +40,65 @@ function App() {
         .then((response) => response.json())
         .then((data) => {
           setUsers([...users, data]);
-          AppToaster.show({
-            message: "User Added Successfully",
-            intent: "success",
-            timeout: "3000",
-          });
+          // AppToaster.show({
+          //   message: "User Added Successfully",
+          //   intent: "success",
+          //   timeout: "3000",
+          // });
+          setNewName("");
+          setNewEmail("");
+          setNewWebsite("");
         });
     }
+  }
+
+  function onChangeHandler(id, key, value) {
+    setUsers((users) => {
+        return users.map(user => {
+          return user.id === id ? {...user, [key]: value} : user;
+        })
+    })
+  }
+
+  function updateUser(id) {
+    const user = users.find((user) => user.id === id);
+    fetch(`https://jsonplaceholder.typicode.com/users/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(user),
+      headers: {
+        "Content-Type": "application/json; charset=UTF-8",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        // setUsers([...users, data]);
+        // AppToaster.show({
+        //   message: "User Updated Successfully",
+        //   intent: "success",
+        //   timeout: "3000",
+        // });
+      });
+
+  } 
+
+  function deleteUser(id) {
+    fetch(`https://jsonplaceholder.typicode.com/users/${id}`, {
+      method: "DELETE",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+
+         setUsers((users) => {
+               return users.filter((user) => user.id !== id)
+         })
+
+        // setUsers([...users, data]);
+        // AppToaster.show({
+        //   message: "User Deleted Successfully",
+        //   intent: "success",
+        //   timeout: "3000",
+        // });
+      });
   }
 
   return (
@@ -64,15 +119,16 @@ function App() {
                 <td>{user.name}</td>
                 <td>
                   {" "}
-                  <EditableText value={user.email} />
+                  <EditableText  onChange={value => onChangeHandler(user.id, 'email', value)} value={user.email} />
                 </td>
                 <td>
                   {" "}
-                  <EditableText value={user.website} />
+                  <EditableText onChange={value => onChangeHandler(user.id, 'website', value)} value={user.website} />
                 </td>
                 <td>
-                  <Button intent="primary">Update</Button>
-                  <Button intent="danger">Delete</Button>
+                  <Button intent="primary" onClick={() => updateUser(user.id)} >Update</Button>
+                  &nbsp;
+                  <Button intent="danger" onClick={() => deleteUser(user.id)} >Delete</Button>
                 </td>
               </tr>
             ))}
